@@ -1,10 +1,8 @@
 package conf
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 )
@@ -15,18 +13,15 @@ const (
 
 var (
 	configMap = map[string]string{}
-	configDir = "config"
 )
 
-func Init(ctx context.Context, configPath string) {
-	configDir = configPath
-
-	err := filepath.WalkDir(configDir, func(path string, info os.DirEntry, err error) error {
+func LoadEnvFromPath(configPath string) {
+	err := filepath.WalkDir(configPath, func(path string, info os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if !info.IsDir() && strings.HasSuffix(path, envFileSuffix) {
-			err := loadEnvFromFile(path)
+			err := LoadEnvFromFile(path)
 			if err != nil {
 				return err
 			}
@@ -46,11 +41,7 @@ func Get(key string) string {
 	return configMap[key]
 }
 
-func ReadFile(filename string) ([]byte, error) {
-	return os.ReadFile(path.Join(configDir, filename))
-}
-
-func loadEnvFromFile(filepath string) error {
+func LoadEnvFromFile(filepath string) error {
 	file, err := os.ReadFile(filepath)
 	if err != nil {
 		wd, _ := os.Getwd()

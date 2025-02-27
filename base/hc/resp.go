@@ -16,12 +16,22 @@ type HttpResponseHelper struct {
 	bodyRead    bool
 }
 
+func WrapHttpResponse(resp *http.Response) *HttpResponseHelper {
+	return &HttpResponseHelper{
+		Response: resp,
+	}
+}
+
 func (r *HttpResponseHelper) Unmarshal(v interface{}) error {
 	bytes, err := r.BodyBytes()
 	if err != nil {
-		return err
+		return fmt.Errorf("read body error: %w", err)
 	}
-	return json.Unmarshal(bytes, v)
+	err = json.Unmarshal(bytes, v)
+	if err != nil {
+		return fmt.Errorf("http_%d %s", r.Response.StatusCode, string(bytes))
+	}
+	return nil
 }
 
 func (r *HttpResponseHelper) BodyBytes() ([]byte, error) {
